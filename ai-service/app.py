@@ -1299,8 +1299,9 @@ def ai_status():
 
 
 if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8080))
     print("\n==============================================")
-    print(" Academic Admin & Advising Portal")
-    print(" Open in browser: http://localhost:8080")
+    print(f" Academic Admin & Advising Portal")
+    print(f" Open in browser: http://localhost:{port}")
     print("==============================================\n")
-    app.run(host="0.0.0.0", port=8080, debug=True)
+    app.run(host="0.0.0.0", port=port, debug=False)
