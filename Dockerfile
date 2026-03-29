@@ -1,42 +1,27 @@
-# Build stage
-FROM maven:3.9.6-eclipse-temurin-17 AS builder
+# Simple Java Build
+FROM maven:3.9.6-eclipse-temurin-17 as maven-builder
 
-WORKDIR /app
-
-# Copy project files
+WORKDIR /build
 COPY pom.xml .
 COPY src ./src
+RUN mvn clean package -DskipTests
 
-# Build the application
-RUN mvn clean package -DskipTests -X 2>&1 | tail -50
+# Runtime
+FROM eclipse-temurin:17-jre
 
-# Check if JAR was created
-RUN ls -la target/ || echo "Build directory not found"
-
-# Runtime stage
-FROM eclipse-temurin:17-jre-jammy
-
-# Install Python
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends python3.11 python3-pip curl && \
-    rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y python3.11 python3-pip && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-# Copy JAR from builder
-COPY --from=builder /app/target/admin-portal-0.0.1-SNAPSHOT.jar app.jar
+# Copy JAR
+COPY --from=maven-builder /build/target/admin-portal-0.0.1-SNAPSHOT.jar .
 
-# Copy Python service
+# Copy Python
 COPY ai-service ./ai-service
+RUN pip install -r ai-service/requirements.txt
 
-# Install Python dependencies
-RUN pip install --no-cache-dir -r ai-service/requirements.txt
-
-# Copy startup script
 COPY start-services.sh .
 RUN chmod +x start-services.sh
 
 EXPOSE 8080 5000
-
-# Start services
 CMD ["./start-services.sh"]
