@@ -1,0 +1,5 @@
+com\university\adminportal\controller\DocumentationController.class
+com\university\adminportal\controller\AdminSystemsController.class
+com\university\adminportal\AdminPortalApplication.class
+com\university\adminportal\controller\SchedulingController.class
+com\university\adminportal\controller\StudentAdvisingController.class

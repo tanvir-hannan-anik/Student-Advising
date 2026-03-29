@@ -242,6 +242,7 @@ def send_email():
         "response": f"Status: {status}\n\nSubject: {subject}\n\n{body}",
         "sent": sent,
         "subject": subject,
+        "body": body,
         "to": to_addr,
     })
 
@@ -1288,6 +1289,42 @@ def get_overview():
     })
 
 
+@app.post("/api/admin-systems/report")
+def generate_admin_report():
+    p = request.get_json(silent=True) or {}
+    report_type = p.get("reportType", "general")
+    department = p.get("department", "All Departments")
+    period = p.get("period", "This Semester")
+
+    type_labels = {
+        "performance": "service performance and turnaround time",
+        "compliance": "audit and compliance",
+        "dashboard": "administrative dashboard summary",
+        "general": "general administrative",
+    }
+    label = type_labels.get(report_type, report_type)
+
+    prompt = (
+        f"You are a university administrative systems analyst.\n"
+        f"Generate a {label} report for {department} covering {period}.\n\n"
+        f"Include:\n"
+        f"1. Executive summary (2-3 sentences).\n"
+        f"2. Key performance metrics with realistic figures.\n"
+        f"3. Notable trends or issues identified.\n"
+        f"4. Compliance status and any outstanding items.\n"
+        f"5. Recommendations for improvement.\n"
+        f"Use a professional, concise reporting style."
+    )
+
+    ai_text = ask_gemini(prompt)
+    return jsonify({
+        "reportType": report_type,
+        "department": department,
+        "period": period,
+        "report": ai_text or "Report generation unavailable. Please contact the administrative office.",
+    })
+
+
 # ── /ai/status ─────────────────────────────────────────────────────────────────
 
 @app.get("/ai/status")
@@ -1299,7 +1336,7 @@ def ai_status():
 
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8080))
+    port = int(os.environ.get("PORT", 5000))
     print("\n==============================================")
     print(f" Academic Admin & Advising Portal")
     print(f" Open in browser: http://localhost:{port}")
