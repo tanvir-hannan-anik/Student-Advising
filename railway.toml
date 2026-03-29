@@ -1,0 +1,15 @@
+[build]
+builder = "dockerfile"
+dockerfile = "Dockerfile"
+
+[deploy]
+startCommand = "./start-services.sh"
+restartPolicyMaxRetries = 5
+
+[[services]]
+name = "academic-portal"
+buildCommand = ""
+startCommand = "./start-services.sh"
+healthchecks = [
+  { path = "/api/admin-systems/overview", initialDelaySeconds = 30 }
+]
