@@ -1,0 +1,17 @@
+node_modules
+npm-debug.log
+.git
+.gitignore
+.DS_Store
+.env
+target
+.m2
+.idea
+*.iml
+.vscode
+build
+dist
+.gradle
+data
+ai-service/.venv
+ai-service/__pycache__
