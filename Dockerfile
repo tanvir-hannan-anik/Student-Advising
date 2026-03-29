@@ -1,27 +1,24 @@
-# Simple Java Build
-FROM maven:3.9.6-eclipse-temurin-17 as maven-builder
+# Build Java Application Only
+FROM maven:3.9.6-eclipse-temurin-17 as builder
 
-WORKDIR /build
+WORKDIR /app
 COPY pom.xml .
 COPY src ./src
-RUN mvn clean package -DskipTests
 
-# Runtime
-FROM eclipse-temurin:17-jre
+# Build JAR
+RUN mvn clean package -DskipTests -q
 
-RUN apt-get update && apt-get install -y python3.11 python3-pip && rm -rf /var/lib/apt/lists/*
+# Runtime - Java only
+FROM eclipse-temurin:17-jre-jammy
 
 WORKDIR /app
 
-# Copy JAR
-COPY --from=maven-builder /build/target/admin-portal-0.0.1-SNAPSHOT.jar .
+# Copy built JAR
+COPY --from=builder /app/target/admin-portal-0.0.1-SNAPSHOT.jar app.jar
 
-# Copy Python
-COPY ai-service ./ai-service
-RUN pip install -r ai-service/requirements.txt
+# Expose port
+EXPOSE 8080
 
-COPY start-services.sh .
-RUN chmod +x start-services.sh
-
-EXPOSE 8080 5000
-CMD ["./start-services.sh"]
+# Run the application
+ENTRYPOINT ["java"]
+CMD ["-Dserver.port=8080", "-jar", "app.jar"]
